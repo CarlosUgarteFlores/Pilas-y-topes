@@ -1,0 +1,296 @@
+
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gestor de Pila</title>
+
+    <!-- Bootstrap: estilos prediseñados -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+</head>
+
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">
+                Gestor de Pila
+            </span>
+        </div>
+    </nav>
+
+    <main class="container py-4">
+
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-9">
+
+                <div class="text-center mb-4">
+                    <h1 class="h2">Estructura de datos: Pila</h1>
+                    <p class="text-secondary">
+                        Agrega, consulta y elimina elementos fácilmente.
+                    </p>
+                </div>
+
+                <!-- Mensajes -->
+                {% if message %}
+                <div
+                    class="alert alert-{{ message_type }} alert-dismissible fade show"
+                    role="alert"
+                >
+                    {{ message }}
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Cerrar"
+                    ></button>
+                </div>
+                {% endif %}
+
+                <!-- Configurar capacidad -->
+                <section class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h2 class="h5">1. Configurar la pila</h2>
+
+                        <form method="POST" class="row g-2 align-items-end">
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="configurar"
+                            >
+
+                            <div class="col-12 col-md-8">
+                                <label for="capacity" class="form-label">
+                                    Capacidad máxima
+                                </label>
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    id="capacity"
+                                    name="capacity"
+                                    min="1"
+                                    step="1"
+                                    value="{{ capacity }}"
+                                    required
+                                >
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary w-100"
+                                >
+                                    Guardar capacidad
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Agregar elementos -->
+                <section class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h2 class="h5">2. Apilar un elemento</h2>
+
+                        <form method="POST" id="pushForm">
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="push"
+                            >
+
+                            <label for="item" class="form-label">
+                                Valor del elemento
+                            </label>
+
+                            <div class="input-group">
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="item"
+                                    name="item"
+                                    placeholder="Ejemplo: 25 o Manzana"
+                                    maxlength="100"
+                                    required
+                                    {% if full %}disabled{% endif %}
+                                >
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-success"
+                                    {% if full %}disabled{% endif %}
+                                >
+                                    Apilar
+                                </button>
+                            </div>
+
+                            {% if full %}
+                            <p class="text-danger small mt-2 mb-0">
+                                La pila está llena. Desapila un elemento
+                                o aumenta su capacidad.
+                            </p>
+                            {% endif %}
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Operaciones -->
+                <section class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h2 class="h5">3. Operaciones de la pila</h2>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <form method="POST">
+                                <input
+                                    type="hidden"
+                                    name="action"
+                                    value="peek"
+                                >
+                                <button
+                                    type="submit"
+                                    class="btn btn-info"
+                                >
+                                    Consultar tope
+                                </button>
+                            </form>
+
+                            <form method="POST">
+                                <input
+                                    type="hidden"
+                                    name="action"
+                                    value="pop"
+                                >
+                                <button
+                                    type="submit"
+                                    class="btn btn-warning"
+                                    {% if empty %}disabled{% endif %}
+                                >
+                                    Desapilar
+                                </button>
+                            </form>
+
+                            <form
+                                method="POST"
+                                id="clearForm"
+                                class="ms-md-auto"
+                            >
+                                <input
+                                    type="hidden"
+                                    name="action"
+                                    value="limpiar"
+                                >
+                                <button
+                                    type="submit"
+                                    class="btn btn-outline-danger"
+                                    {% if empty %}disabled{% endif %}
+                                >
+                                    Vaciar pila
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Estado de la pila -->
+                <section class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h2 class="h5">4. Estado actual</h2>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <div class="border rounded p-3 h-100">
+                                    <p class="text-secondary mb-1">
+                                        Elementos
+                                    </p>
+                                    <p class="h3 mb-0">
+                                        {{ total }} / {{ capacity }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="border rounded p-3 h-100">
+                                    <p class="text-secondary mb-1">
+                                        Tope
+                                    </p>
+                                    <p class="h3 mb-0">
+                                        {{ top if top is not none else "Vacío" }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 class="h6">Contenido de la pila</h3>
+
+                        {% if stack %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th scope="col">Posición</th>
+                                        <th scope="col">Elemento</th>
+                                        <th scope="col">Estado</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for item in stack %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>{{ item }}</td>
+                                        <td>
+                                            {% if loop.first %}
+                                            <span class="badge text-bg-success">
+                                                Tope
+                                            </span>
+                                            {% else %}
+                                            En la pila
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-secondary mb-0">
+                            La pila está vacía. Agrega tu primer elemento.
+                        </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <p class="text-center text-secondary small">
+                    Proyecto educativo de Python y Flask.
+                </p>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap JavaScript -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    ></script>
+
+    <!-- JavaScript propio: confirmación al vaciar -->
+    <script>
+        const clearForm = document.getElementById("clearForm");
+
+        clearForm.addEventListener("submit", function (event) {
+            const confirmed = window.confirm(
+                "¿Seguro que deseas vaciar toda la pila?"
+            );
+
+            if (!confirmed) {
+                event.preventDefault();
+            }
+        });
+    </script>
+
+</body>
+</html>
